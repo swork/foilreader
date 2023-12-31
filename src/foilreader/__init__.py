@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import IO
 
 __version__ = "0.0.1"
 
@@ -15,7 +16,7 @@ class FoilReader:
     def __init__(self):
         self.text = None
 
-    def get(self, filelike) -> Foil | None:
+    def get(self, filelike: IO[str]) -> Foil | None:
         self.text = filelike.read()
         return self.best(
             self.as_airfoiltoolscom_csv(),
