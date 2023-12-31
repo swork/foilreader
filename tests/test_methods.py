@@ -1,7 +1,8 @@
 """Test functions from the source code."""
 from __future__ import annotations
-from foilreader import FoilReader
+from foilreader import FoilReader, Foil
 import io
+import pytest
 
 sd2083_9pct = """SD2083 (9.0%)
   1.000000  0.000000
@@ -67,16 +68,57 @@ sd2083_9pct = """SD2083 (9.0%)
   1.000010  0.000000
 """
 
+
 def test_parser_None():
     r = FoilReader()
     assert r is not None
+    with pytest.raises(ValueError):
+        x = r.text
+        assert x is None  # not reached
     # no .get, no initialization
     assert r.as_seligdatfile() is None
     assert r.as_uiucedu_txt() is None
     assert r.best(None, None, None, None) is None
 
+
 def test_parser_sd2083():
     r = FoilReader()
     f = r.get(io.StringIO(sd2083_9pct))
     assert f is not None
+    assert f.name == "SD2083 (9.0%)"
     assert len(f.coordinates) == 61
+
+
+def test_parser_selig_bad():
+    r = FoilReader()
+    f = None
+
+    # no name on first line
+    r.text = """
+ 1.0000 0.0000
+ 0.999  0.999
+"""
+    f = r.as_seligdatfile()
+    assert f is None
+
+    r.text = """ Bad desc starts with space but shouldn't.
+ 1.0000 0.0000
+ 0.999  0.999
+"""
+    f = r.as_seligdatfile()
+    assert f is None
+
+    r.text = """Selig data file with non-numeric coords
+  x1.000000  y0.000000
+  0.996690  0.000350
+"""
+    f = r.as_seligdatfile()
+    assert f is None
+
+
+def test_Foil_no_name():
+    f = Foil()
+    assert f is not None
+    with pytest.raises(ValueError):
+        x = f.name
+        assert x is None  # not reached

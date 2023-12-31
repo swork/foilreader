@@ -11,6 +11,9 @@ class Foil:
         self._name: str | None = None
         self._coordinates: list[tuple[float, float]] = []
 
+    def __str__(self) -> str:
+        return f"Foil<{self._name}, coords:{len(self._coordinates)}>"
+
     @property
     def coordinates(self) -> list[tuple[float, float]]:
         return self._coordinates
@@ -21,7 +24,7 @@ class Foil:
     @property
     def name(self) -> str:
         if self._name is None:
-            raise ValueError(f"Foil has no .name")
+            raise ValueError("Foil has no .name")
         return self._name
 
     @name.setter
@@ -36,7 +39,7 @@ class FoilReader:
     @property
     def text(self) -> str:
         if self._text is None:
-            raise ValueError(f"FoilReader has no text. (.get()?)")
+            raise ValueError("FoilReader has no text. (.get()?)")
         return self._text
 
     @text.setter
@@ -44,7 +47,7 @@ class FoilReader:
         self._text = text
 
     def get(self, filelike: IO[str]) -> Foil | None:
-        self._text = filelike.read()
+        self.text = filelike.read()
         return self.best(
             self.as_seligdatfile(),
             self.as_uiucedu_txt(),
@@ -72,12 +75,16 @@ class FoilReader:
         if self._text is None:
             return None
 
-        r_desc = re.compile(r"\S(.*)\s*")
+        r_desc = re.compile(r"(\S.*)\s*")
         r_coords = re.compile(r"\s+([\d.-]+)\s+([\d.-]+)\s*")
         r_empty = re.compile(r"^\s*$")
         lines = self.text.split("\n")
         mo = r_desc.match(lines[0])
         if not mo:
+            try:
+                raise ValueError(f'First line is not a description: "{lines[0]}')
+            except Exception as e:
+                print_exception(e, limit=3)
             return None
 
         f = Foil()
