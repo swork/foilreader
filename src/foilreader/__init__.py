@@ -5,19 +5,19 @@ __version__ = "0.0.1"
 
 
 class Foil:
-    def __init__(self):
-        self.coordinates: list[tuple[float, float]] = []
+    def __init__(self) -> None:
+        self._coordinates: list[tuple[float, float]] = []
 
     def coordinates(self) -> list[tuple[float, float]]:
-        return self.coordinates
+        return self._coordinates
 
 
 class FoilReader:
-    def __init__(self):
-        self.text = None
+    def __init__(self) -> None:
+        self._text: str | None = None
 
     def get(self, filelike: IO[str]) -> Foil | None:
-        self.text = filelike.read()
+        self._text = filelike.read()
         return self.best(
             self.as_airfoiltoolscom_csv(),
             self.as_uiucedu_txt(),
@@ -29,7 +29,7 @@ class FoilReader:
             if result is None:
                 continue
             if best:
-                if len(result.coordinates) > len(best.coordinates):
+                if len(result.coordinates()) > len(best.coordinates()):
                     best = result
             else:
                 best = result
